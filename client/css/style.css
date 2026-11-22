@@ -1,0 +1,60 @@
+/* Estilos base del prototipo. Mantenemos la UI simple en esta fase. */
+:root {
+  --bg: #1f2a1f;
+  --panel: #2d3b2d;
+  --text: #f3f7e8;
+  --muted: #c7d4b8;
+  --accent: #8fd694;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at top, #314631 0%, var(--bg) 70%);
+  color: var(--text);
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+}
+
+.game-shell {
+  width: min(100vw - 2rem, 980px);
+  padding: 1rem;
+  text-align: center;
+  background: color-mix(in srgb, var(--panel) 88%, black);
+  border: 2px solid #4f6a4f;
+  border-radius: 12px;
+}
+
+.game-title {
+  margin: 0;
+  font-size: 2rem;
+  letter-spacing: 0.08em;
+}
+
+.game-subtitle {
+  margin: 0.25rem 0 1rem;
+  color: var(--muted);
+}
+
+#game-canvas {
+  display: block;
+  width: min(100%, 960px);
+  height: auto;
+  margin: 0 auto;
+  border: 3px solid #6f8f6f;
+  background: #000;
+  /* Mantiene los píxeles nítidos al escalar el pixel art */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.status {
+  margin: 0.75rem 0 0;
+  color: var(--accent);
+  font-size: 0.95rem;
+}
