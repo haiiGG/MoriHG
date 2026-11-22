@@ -1,15 +1,26 @@
 /**
- * MoriHG - Paso 2.1: Renderizado inicial del mapa del Bosque Esmeralda.
+ * MoriHG - Paso 2.2a: renderizado del mapa, jugador, movimiento y cámara.
  *
  * Este archivo se encarga de:
- * 1. Cargar el mapa TMJ exportado/generado para Tiled.
- * 2. Cargar las imágenes de tilesets referenciadas por el mapa.
- * 3. Dibujar las capas visibles en un <canvas>.
+ * 1. Cargar el mapa TMJ y sus tilesets.
+ * 2. Crear el jugador y la cámara.
+ * 3. Ejecutar el bucle de juego: actualizar y dibujar en cada frame.
  *
- * De momento NO hay movimiento, cámara ni colisiones. Eso llegará en pasos posteriores.
+ * Todavía NO hay colisiones. Se implementarán en el siguiente paso.
  */
 
+import { Camera } from "./core/camera.js";
+import { Input } from "./core/input.js";
+import { Player } from "./entities/player.js";
+
 const MAP_PATH = "assets/maps/bosque-esmeralda/bosque-esmeralda.tmj";
+const PLAYER_SPRITE_PATH =
+  "assets/tilesets/bosque-esmeralda/tiny-rpg-forest/tiny-RPG-forest-files/PNG/sprites/hero/idle/hero-idle-front/hero-idle-front.png";
+
+// Tamaño de la ventana visible del juego (en píxeles del mundo).
+// El CSS escala el canvas manteniendo el pixel art nítido.
+const VIEWPORT_WIDTH = 320;
+const VIEWPORT_HEIGHT = 192;
 const canvas = document.getElementById("game-canvas");
 const statusEl = document.getElementById("status");
 const ctx = canvas.getContext("2d");
@@ -134,8 +145,6 @@ function shouldRenderLayer(layer) {
 }
 
 function drawMap(map, tilesets) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
   for (const layer of map.layers) {
     if (shouldRenderLayer(layer)) {
       drawTileLayer(layer, map, tilesets);
@@ -143,23 +152,67 @@ function drawMap(map, tilesets) {
   }
 }
 
+function getSpawnPoint(map) {
+  const spawnLayer = map.layers.find((layer) => layer.name === "spawn");
+  const spawnObject = spawnLayer?.objects?.find(
+    (object) => object.name === "player_spawn"
+  );
+
+  if (spawnObject) {
+    return { x: spawnObject.x, y: spawnObject.y - (spawnObject.height || 0) };
+  }
+
+  return { x: 128, y: 128 };
+}
+
 async function main() {
   try {
     setStatus("Cargando mapa...");
 
-    const map = await loadJson(MAP_PATH);
+    const [map, playerImage] = await Promise.all([
+      loadJson(MAP_PATH),
+      loadImage(PLAYER_SPRITE_PATH),
+    ]);
 
-    canvas.width = map.width * map.tilewidth;
-    canvas.height = map.height * map.tileheight;
+    const worldWidth = map.width * map.tilewidth;
+    const worldHeight = map.height * map.tileheight;
+
+    canvas.width = VIEWPORT_WIDTH;
+    canvas.height = VIEWPORT_HEIGHT;
 
     setStatus("Cargando tilesets...");
     const tilesets = await loadTilesets(map, MAP_PATH);
 
-    drawMap(map, tilesets);
+    const spawn = getSpawnPoint(map);
+    const player = new Player({ x: spawn.x, y: spawn.y, image: playerImage });
+    const camera = new Camera(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
+    const input = new Input();
+
+    let lastTime = performance.now();
+
+    function gameLoop(currentTime) {
+      const deltaSeconds = Math.min((currentTime - lastTime) / 1000, 0.1);
+      lastTime = currentTime;
+
+      player.update(deltaSeconds, input, worldWidth, worldHeight);
+      camera.follow(player, worldWidth, worldHeight);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.translate(-camera.x, -camera.y);
+
+      drawMap(map, tilesets);
+      player.draw(ctx);
+
+      ctx.restore();
+
+      requestAnimationFrame(gameLoop);
+    }
 
     setStatus(
-      `Mapa cargado: ${map.width}x${map.height} tiles, ${tilesets.length} tilesets.`
+      `Mapa listo: ${map.width}x${map.height} tiles. Usa WASD o flechas para moverte.`
     );
+    requestAnimationFrame(gameLoop);
   } catch (error) {
     console.error(error);
     setStatus(`Error: ${error.message}`, true);

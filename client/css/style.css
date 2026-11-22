@@ -53,6 +53,12 @@ body {
   image-rendering: crisp-edges;
 }
 
+.controls-hint {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .status {
   margin: 0.75rem 0 0;
   color: var(--accent);
