@@ -1,0 +1,30 @@
+# Dependencias
+node_modules/
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Entornos
+.env
+.env.*
+!.env.example
+
+# Build / temporales
+dist/
+build/
+.tmp/
+.temp/
+
+# Tiled
+*.tiled-session
+*.tiled-backup*
