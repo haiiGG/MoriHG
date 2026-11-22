@@ -12,6 +12,7 @@
 import { Camera } from "./core/camera.js";
 import { Input } from "./core/input.js";
 import { Player } from "./entities/player.js";
+import { CollisionMap } from "./world/collision.js";
 
 const MAP_PATH = "assets/maps/bosque-esmeralda/bosque-esmeralda.tmj";
 const PLAYER_SPRITE_PATH =
@@ -165,6 +166,15 @@ function getSpawnPoint(map) {
   return { x: 128, y: 128 };
 }
 
+function createCollisionMap(map) {
+  const collisionLayer = map.layers.find((layer) => layer.name === "collision");
+  if (!collisionLayer || collisionLayer.type !== "tilelayer") {
+    return null;
+  }
+
+  return new CollisionMap(collisionLayer.data, map.width, map.height, map.tilewidth);
+}
+
 async function main() {
   try {
     setStatus("Cargando mapa...");
@@ -183,6 +193,7 @@ async function main() {
     setStatus("Cargando tilesets...");
     const tilesets = await loadTilesets(map, MAP_PATH);
 
+    const collisionMap = createCollisionMap(map);
     const spawn = getSpawnPoint(map);
     const player = new Player({ x: spawn.x, y: spawn.y, image: playerImage });
     const camera = new Camera(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
@@ -194,7 +205,7 @@ async function main() {
       const deltaSeconds = Math.min((currentTime - lastTime) / 1000, 0.1);
       lastTime = currentTime;
 
-      player.update(deltaSeconds, input, worldWidth, worldHeight);
+      player.update(deltaSeconds, input, worldWidth, worldHeight, collisionMap);
       camera.follow(player, worldWidth, worldHeight);
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);

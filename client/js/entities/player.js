@@ -1,7 +1,6 @@
 /**
  * Jugador provisional para la Fase 2.
- * Por ahora solo tiene posición, movimiento y dibujo del sprite.
- * Las colisiones se añadirán en el siguiente paso.
+ * Tiene posición, movimiento, dibujo y colisión por rectángulo contra el mapa.
  */
 export class Player {
   constructor({ x, y, image }) {
@@ -11,9 +10,26 @@ export class Player {
     this.height = 32;
     this.speed = 96; // píxeles por segundo
     this.image = image;
+
+    // Hitbox más pequeña que el sprite para que el movimiento se sienta natural.
+    this.hitbox = {
+      offsetX: 8,
+      offsetY: 16,
+      width: 16,
+      height: 14,
+    };
   }
 
-  update(deltaSeconds, input, worldWidth, worldHeight) {
+  getHitbox(nextX = this.x, nextY = this.y) {
+    return {
+      x: nextX + this.hitbox.offsetX,
+      y: nextY + this.hitbox.offsetY,
+      width: this.hitbox.width,
+      height: this.hitbox.height,
+    };
+  }
+
+  update(deltaSeconds, input, worldWidth, worldHeight, collisionMap) {
     let dx = 0;
     let dy = 0;
 
@@ -29,12 +45,31 @@ export class Player {
       dy *= diagonalFactor;
     }
 
-    this.x += dx * this.speed * deltaSeconds;
-    this.y += dy * this.speed * deltaSeconds;
+    const moveX = dx * this.speed * deltaSeconds;
+    const moveY = dy * this.speed * deltaSeconds;
 
-    // Limita al jugador dentro del mundo.
-    this.x = Math.min(Math.max(0, this.x), worldWidth - this.width);
-    this.y = Math.min(Math.max(0, this.y), worldHeight - this.height);
+    this.moveAxis("x", moveX, worldWidth, worldHeight, collisionMap);
+    this.moveAxis("y", moveY, worldWidth, worldHeight, collisionMap);
+  }
+
+  moveAxis(axis, amount, worldWidth, worldHeight, collisionMap) {
+    if (amount === 0) return;
+
+    const nextX = axis === "x" ? this.x + amount : this.x;
+    const nextY = axis === "y" ? this.y + amount : this.y;
+
+    const clampedX = Math.min(Math.max(0, nextX), worldWidth - this.width);
+    const clampedY = Math.min(Math.max(0, nextY), worldHeight - this.height);
+
+    const hitbox = this.getHitbox(clampedX, clampedY);
+    const blocked =
+      collisionMap?.isRectBlocked(hitbox.x, hitbox.y, hitbox.width, hitbox.height) ??
+      false;
+
+    if (!blocked) {
+      this.x = clampedX;
+      this.y = clampedY;
+    }
   }
 
   draw(ctx) {
