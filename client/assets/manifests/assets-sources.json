@@ -1,0 +1,17 @@
+[
+  {
+    "id": "tiny-rpg-forest",
+    "name": "Tiny RPG - Forest",
+    "author": "Luis Zuno (@ansimuz)",
+    "sourceUrl": "https://opengameart.org/content/tiny-rpg-forest",
+    "license": "CC0 / Public Domain",
+    "downloadedAt": "2026-11-22",
+    "status": "provisional",
+    "usage": "Base provisional para tileset y sprites del Bosque Esmeralda en MoriHG",
+    "path": "client/assets/tilesets/bosque-esmeralda/tiny-rpg-forest/",
+    "mainFiles": [
+      "client/assets/tilesets/bosque-esmeralda/tiny-rpg-forest/tiny-RPG-forest-files/PNG/environment/tileset.png"
+    ],
+    "notes": "No modificar la lógica del juego para acoplarla a este pack; usar IDs/manifiestos y permitir sustitución futura por assets propios."
+  }
+]
